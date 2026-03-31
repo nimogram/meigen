@@ -25,7 +25,6 @@
             padding-bottom: env(safe-area-inset-bottom);
         }
         
-        /* カテゴリーボタン（共通） */
         .chip {
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             border-width: 1px;
@@ -33,9 +32,10 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            height: 58px;
             text-align: center;
             line-height: 1.1;
-            padding: 8px;
+            padding: 6px;
         }
         .chip-active {
             color: #ffffff !important;
@@ -46,12 +46,11 @@
             transform: scale(0.98);
         }
         
-        /* ALL専用（エメラルドグリーン背景・フルワイド） */
         #cat-ALL {
             background-color: #10b981;
             border-color: #10b981;
             color: #ffffff !important;
-            grid-column: span 3; /* グリッドの上で横一杯に広げる */
+            grid-column: span 3;
             height: 60px;
             font-size: 16px;
             letter-spacing: 0.2em;
@@ -61,7 +60,6 @@
             opacity: 0.9;
         }
 
-        /* アニメーション演出 */
         .anim-fade { animation: animFade 0.8s ease-out forwards; }
         .anim-slide { animation: animSlide 0.8s ease-out forwards; }
         .anim-zoom { animation: animZoom 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
@@ -109,12 +107,10 @@
 </head>
 <body class="select-none">
 
-    <!-- Timer Indicator -->
     <div class="fixed top-0 left-0 w-full h-0.5 bg-white/5 z-50">
         <div id="progress-bar"></div>
     </div>
 
-    <!-- Minimal Header -->
     <header class="px-6 pt-12 pb-2 flex justify-between items-center">
         <div class="opacity-10 text-[8px] font-black tracking-[0.5em] uppercase">Private Intelligence</div>
         <button onclick="openModal()" class="w-10 h-10 rounded-full bg-neutral-900/50 flex items-center justify-center border border-neutral-800 active:scale-90 transition-transform">
@@ -122,7 +118,6 @@
         </button>
     </header>
 
-    <!-- Main Content Area -->
     <main class="flex-grow flex flex-col justify-center px-10">
         <div id="display-area" class="w-full max-w-lg mx-auto">
             <div id="quote-container" class="min-h-[200px]">
@@ -132,14 +127,12 @@
         </div>
     </main>
 
-    <!-- Navigation Grid (Full-width ALL + 3 Columns Grid) -->
     <footer class="px-4 pb-12 pt-6 bg-gradient-to-t from-black to-transparent">
         <div id="category-container" class="grid grid-cols-3 gap-2.5">
-            <!-- JS populated: ALL will be first and full-width -->
+            <!-- JS populated -->
         </div>
     </footer>
 
-    <!-- Add Insight Modal -->
     <div id="add-modal" class="modal">
         <div class="bg-[#111] w-full max-w-sm p-8 rounded-[2.5rem] border border-neutral-800 shadow-2xl relative overflow-hidden">
             <div class="absolute top-0 left-0 w-full h-1 bg-[var(--accent)]"></div>
@@ -165,11 +158,11 @@
 
     <script>
         const CONFIG = {
-            spreadsheetId: '1C_v9kxABeLRIWBu5on_mM6yaW4vl1kchsTrzTYZNTqg',
+            spreadsheetId: 'YOUR_SPREADSHEET_ID_HERE', // スプレッドシートID
             tabName: 'シート1',
             intervalMs: 8000,
             typingSpeed: 120, 
-            scriptUrl: '' 
+            scriptUrl: 'https://script.google.com/macros/s/AKfycbw_rJsFsnhEXr8d3XxhaSIPvkq0nK6Lcn8bAmhZ5oI768wclg466kqA-PWraQ1kj_kKkA/exec' // ★ここにデプロイしたURLを貼る
         };
 
         const CAT_SETTINGS = {
@@ -193,7 +186,7 @@
 
         async function loadData() {
             if (!CONFIG.spreadsheetId || CONFIG.spreadsheetId.includes('YOUR_SPREADSHEET_ID')) {
-                showError("ID REQUIRED", "スプレッドシートIDを入力してください。");
+                showError("ID REQUIRED", "スプレッドシートIDを設定してください。");
                 return;
             }
 
@@ -229,7 +222,7 @@
                 const isAll = cat === 'ALL';
                 return `
                     <button onclick="setCategory('${cat}')" id="cat-${cat}" 
-                        class="chip rounded-xl text-[13px] font-bold tracking-tight uppercase border border-white/10 ${isAll ? 'mb-2' : ''}" 
+                        class="chip rounded-xl text-[13px] font-bold tracking-tight uppercase border border-white/10" 
                         style="--cat-color: ${settings.color}; --cat-color-alpha: ${settings.alpha}; border-color: ${isAll ? '#10b981' : settings.color + '44'}; color: ${isAll ? '#fff' : settings.color};">
                         ${cat}
                     </button>
@@ -331,36 +324,40 @@
             const content = document.getElementById('new-content').value;
             const author = document.getElementById('new-author').value;
             const btn = document.getElementById('submit-btn');
+
             if (!content) return;
+
             btn.innerText = "SAVING...";
             btn.disabled = true;
 
-            if (!CONFIG.scriptUrl) {
-                setTimeout(() => {
-                    alert("GAS URL missing.");
-                    btn.innerText = "SAVE";
-                    btn.disabled = false;
-                    closeModal();
-                }, 800);
+            if (!CONFIG.scriptUrl || CONFIG.scriptUrl.includes('YOUR_GAS_WEB_APP')) {
+                alert("GASのデプロイURLが設定されていません。コードの scriptUrl を確認してください。");
+                btn.innerText = "SAVE";
+                btn.disabled = false;
                 return;
             }
 
             try {
+                // CORS問題を回避するため、mode: 'no-cors' で送信
                 await fetch(CONFIG.scriptUrl, {
                     method: 'POST',
-                    mode: 'no-cors',
+                    mode: 'no-cors', // これによりブラウザのエラーを回避
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ category: cat, content: content, author: author })
                 });
+
+                // no-cors の場合、成否の判定ができないため、一定時間後に成功として扱う
                 btn.innerText = "DONE!";
                 setTimeout(() => {
                     btn.innerText = "SAVE";
                     btn.disabled = false;
                     closeModal();
-                    loadData(); 
+                    // 2秒後にデータをリロードして反映を確認
+                    setTimeout(loadData, 2000);
                 }, 1500);
             } catch (e) {
-                alert("Error");
+                console.error("Submit error:", e);
+                alert("送信中にエラーが発生しました。");
                 btn.disabled = false;
                 btn.innerText = "SAVE";
             }
