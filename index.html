@@ -33,10 +33,10 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            height: 54px; /* サイズアップに合わせて高さを調整 */
+            height: 58px; /* 文字サイズに合わせてわずかに調整 */
             text-align: center;
-            line-height: 1.2;
-            padding: 4px;
+            line-height: 1.1;
+            padding: 6px;
         }
         .chip-active {
             color: #ffffff !important;
@@ -47,7 +47,7 @@
             transform: scale(0.98);
         }
         
-        /* ALL専用 */
+        /* ALL専用（エメラルドグリーン・白文字） */
         #cat-ALL {
             background-color: #10b981;
             border-color: #10b981;
@@ -58,7 +58,7 @@
             opacity: 0.9;
         }
 
-        /* アニメーション */
+        /* アニメーション演出 */
         .anim-fade { animation: animFade 0.8s ease-out forwards; }
         .anim-slide { animation: animSlide 0.8s ease-out forwards; }
         .anim-zoom { animation: animZoom 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
@@ -119,7 +119,7 @@
         </button>
     </header>
 
-    <!-- Main Area -->
+    <!-- Main Content Area -->
     <main class="flex-grow flex flex-col justify-center px-10">
         <div id="display-area" class="w-full max-w-lg mx-auto">
             <div id="quote-container" class="min-h-[200px]">
@@ -136,17 +136,16 @@
         </div>
     </footer>
 
-    <!-- Modal -->
+    <!-- Add Insight Modal -->
     <div id="add-modal" class="modal">
         <div class="bg-[#111] w-full max-w-sm p-8 rounded-[2.5rem] border border-neutral-800 shadow-2xl relative overflow-hidden">
             <div class="absolute top-0 left-0 w-full h-1 bg-[var(--accent)]"></div>
             <h2 class="text-lg font-black mb-8 text-center tracking-widest uppercase">Stock Insight</h2>
             <div class="space-y-4">
                 <select id="new-category" class="w-full bg-neutral-900 border border-neutral-800 rounded-xl p-4 text-sm font-bold text-white focus:outline-none focus:border-[var(--accent)] appearance-none">
-                    <option value="nimogram">nimogram</option>
+                    <option value="NIMOGRAM">NIMOGRAM</option>
                     <option value="Mindset">Mindset</option>
-                    <option value="Action">Action</option>
-                    <option value="Dialogue">Dialogue</option>
+                    <option value="Communication">Communication</option>
                     <option value="Mechanism">Mechanism</option>
                     <option value="Strategy & Leadership">Strategy & Leadership</option>
                 </select>
@@ -172,11 +171,10 @@
         const CAT_SETTINGS = {
             'ALL': { color: '#10b981', alpha: 'rgba(16,185,129,0.4)' },
             'Mindset': { color: '#6366f1', alpha: 'rgba(99,102,241,0.4)' },
-            'Action': { color: '#f97316', alpha: 'rgba(249,115,22,0.4)' },
-            'Dialogue': { color: '#ec4899', alpha: 'rgba(236,72,153,0.4)' },
+            'Communication': { color: '#ec4899', alpha: 'rgba(236,72,153,0.4)' },
             'Mechanism': { color: '#06b6d4', alpha: 'rgba(6,182,212,0.4)' },
             'Strategy & Leadership': { color: '#8b5cf6', alpha: 'rgba(139,92,246,0.4)' },
-            'nimogram': { color: '#d4af37', alpha: 'rgba(212,175,55,0.4)' },
+            'NIMOGRAM': { color: '#d4af37', alpha: 'rgba(212,175,55,0.4)' },
             '未分類': { color: '#525252', alpha: 'rgba(82,82,82,0.4)' }
         };
 
@@ -219,7 +217,8 @@
 
         function renderCategories() {
             const container = document.getElementById('category-container');
-            const defaultCats = ['ALL', 'Mindset', 'Action', 'Dialogue', 'Mechanism', 'Strategy & Leadership', 'nimogram'];
+            // ニモさんの指示に基づきカテゴリーを統一
+            const defaultCats = ['ALL', 'Mindset', 'Communication', 'Mechanism', 'Strategy & Leadership', 'NIMOGRAM'];
             
             container.innerHTML = defaultCats.map(cat => {
                 const settings = CAT_SETTINGS[cat] || CAT_SETTINGS['未分類'];
