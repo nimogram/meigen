@@ -32,7 +32,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            height: 58px;
+            height: 54px;
             text-align: center;
             line-height: 1.1;
             padding: 6px;
@@ -46,6 +46,7 @@
             transform: scale(0.98);
         }
         
+        /* ALL専用（横一面・エメラルドグリーン） */
         #cat-ALL {
             background-color: #10b981;
             border-color: #10b981;
@@ -138,7 +139,7 @@
             <div class="absolute top-0 left-0 w-full h-1 bg-[var(--accent)]"></div>
             <h2 class="text-lg font-black mb-8 text-center tracking-widest uppercase">Stock Insight</h2>
             <div class="space-y-4">
-                <select id="new-category" class="w-full bg-neutral-900 border border-neutral-800 rounded-xl p-4 text-sm font-bold text-white focus:outline-none focus:border-[var(--accent)] appearance-none">
+                <select id="new-category" class="w-full bg-neutral-900 border border-neutral-800 rounded-xl p-4 text-[13px] font-bold text-white focus:outline-none focus:border-[var(--accent)] appearance-none">
                     <option value="NIMOGRAM">NIMOGRAM</option>
                     <option value="FINANCE">FINANCE</option>
                     <option value="Mindset">Mindset</option>
@@ -146,8 +147,8 @@
                     <option value="Mechanism">Mechanism</option>
                     <option value="Strategy & Leadership">Strategy & Leadership</option>
                 </select>
-                <textarea id="new-content" rows="4" class="w-full bg-neutral-900 border border-neutral-800 rounded-xl p-4 text-sm text-white focus:outline-none focus:border-[var(--accent)]" placeholder="思考を言語化する..."></textarea>
-                <input id="new-author" type="text" class="w-full bg-neutral-900 border border-neutral-800 rounded-xl p-4 text-sm text-white focus:outline-none focus:border-[var(--accent)]" placeholder="出典（任意）">
+                <textarea id="new-content" rows="4" class="w-full bg-neutral-900 border border-neutral-800 rounded-xl p-4 text-[13px] text-white focus:outline-none focus:border-[var(--accent)]" placeholder="思考を言語化する..."></textarea>
+                <input id="new-author" type="text" class="w-full bg-neutral-900 border border-neutral-800 rounded-xl p-4 text-[13px] text-white focus:outline-none focus:border-[var(--accent)]" placeholder="出典（任意）">
             </div>
             <div class="mt-8 flex gap-3">
                 <button onclick="closeModal()" class="flex-1 py-4 text-xs text-secondary font-bold">CLOSE</button>
@@ -158,11 +159,12 @@
 
     <script>
         const CONFIG = {
-            spreadsheetId: 'YOUR_SPREADSHEET_ID_HERE', // スプレッドシートID
+            // これまでの履歴に基づき、ニモさんのスプレッドシートIDを復旧しました
+            spreadsheetId: '1C_v9kxABeLRIWBu5on_mM6yaW4vl1kchsTrzTYZNTqg', 
             tabName: 'シート1',
             intervalMs: 8000,
             typingSpeed: 120, 
-            scriptUrl: 'https://script.google.com/macros/s/AKfycbw_rJsFsnhEXr8d3XxhaSIPvkq0nK6Lcn8bAmhZ5oI768wclg466kqA-PWraQ1kj_kKkA/exec' // ★ここにデプロイしたURLを貼る
+            scriptUrl: 'https://script.google.com/macros/s/AKfycbw_rJsFsnhEXr8d3XxhaSIPvkq0nK6Lcn8bAmhZ5oI768wclg466kqA-PWraQ1kj_kKkA/exec' 
         };
 
         const CAT_SETTINGS = {
@@ -215,6 +217,7 @@
 
         function renderCategories() {
             const container = document.getElementById('category-container');
+            // ALLを横一面に配置
             const defaultCats = ['ALL', 'FINANCE', 'Mindset', 'Communication', 'Mechanism', 'Strategy & Leadership', 'NIMOGRAM'];
             
             container.innerHTML = defaultCats.map(cat => {
@@ -331,33 +334,30 @@
             btn.disabled = true;
 
             if (!CONFIG.scriptUrl || CONFIG.scriptUrl.includes('YOUR_GAS_WEB_APP')) {
-                alert("GASのデプロイURLが設定されていません。コードの scriptUrl を確認してください。");
+                alert("GASのデプロイURLが設定されていません。");
                 btn.innerText = "SAVE";
                 btn.disabled = false;
                 return;
             }
 
             try {
-                // CORS問題を回避するため、mode: 'no-cors' で送信
                 await fetch(CONFIG.scriptUrl, {
                     method: 'POST',
-                    mode: 'no-cors', // これによりブラウザのエラーを回避
+                    mode: 'no-cors',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ category: cat, content: content, author: author })
                 });
 
-                // no-cors の場合、成否の判定ができないため、一定時間後に成功として扱う
                 btn.innerText = "DONE!";
                 setTimeout(() => {
                     btn.innerText = "SAVE";
                     btn.disabled = false;
                     closeModal();
-                    // 2秒後にデータをリロードして反映を確認
                     setTimeout(loadData, 2000);
                 }, 1500);
             } catch (e) {
                 console.error("Submit error:", e);
-                alert("送信中にエラーが発生しました。");
+                alert("送信エラー。設定を確認してください。");
                 btn.disabled = false;
                 btn.innerText = "SAVE";
             }
