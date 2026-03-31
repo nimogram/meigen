@@ -23,11 +23,14 @@
         }
         .chip {
             transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            border-width: 1px;
+            border-style: solid;
         }
         .chip-active {
-            background-color: var(--accent);
-            color: #000;
+            color: #000 !important;
             font-weight: 600;
+            background-color: var(--cat-color) !important;
+            border-color: var(--cat-color) !important;
         }
         
         /* --- Random Container Animations --- */
@@ -51,7 +54,6 @@
             transition: width 8s linear;
         }
         
-        /* Typing cursor style */
         .cursor::after {
             content: '|';
             color: var(--accent);
@@ -59,6 +61,20 @@
             margin-left: 2px;
         }
         @keyframes blink { 50% { opacity: 0; } }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.85);
+            backdrop-filter: blur(8px);
+            z-index: 50;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .modal.active { display: flex; }
     </style>
 </head>
 <body class="min-h-screen flex flex-col">
@@ -70,8 +86,13 @@
 
     <!-- Header -->
     <header class="p-6 pt-12 pb-4 flex justify-between items-center">
-        <h1 class="text-xs font-bold tracking-[0.2em] text-secondary uppercase opacity-60">Mindset Navigator</h1>
-        <div id="auto-indicator" class="text-[10px] text-[var(--accent)] font-bold animate-pulse">AUTO FLIP: 8s</div>
+        <div>
+            <h1 class="text-xs font-bold tracking-[0.2em] text-secondary uppercase opacity-60">Mindset Navigator</h1>
+            <div id="auto-indicator" class="text-[10px] text-[var(--accent)] font-bold mt-1">AUTO FLIP: 8s</div>
+        </div>
+        <button onclick="openModal()" class="w-10 h-10 rounded-full bg-neutral-800 flex items-center justify-center border border-neutral-700 active:scale-90 transition-transform">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+        </button>
     </header>
 
     <!-- Category Filter -->
@@ -82,9 +103,8 @@
     <!-- Main Quote Area -->
     <main class="flex-grow flex flex-col justify-center px-8 py-12">
         <div id="display-area">
-            <div id="category-label" class="text-[var(--accent)] text-xs font-bold mb-4 tracking-widest uppercase">Connecting...</div>
+            <div id="category-label" class="text-xs font-bold mb-4 tracking-widest uppercase" style="color: var(--accent)">Connecting...</div>
             <div id="quote-container">
-                <!-- ID "quote-text" will receive the typing effect -->
                 <p id="quote-text" class="text-2xl md:text-3xl font-bold leading-relaxed mb-6"></p>
                 <p id="quote-author" class="text-sm text-secondary italic opacity-0 transition-opacity duration-1000"></p>
             </div>
@@ -99,12 +119,59 @@
         </button>
     </footer>
 
+    <!-- Add Insight Modal -->
+    <div id="add-modal" class="modal">
+        <div class="bg-[#262626] w-full max-w-md p-8 rounded-3xl border border-neutral-800 shadow-2xl">
+            <h2 class="text-xl font-bold mb-6 flex items-center gap-2">
+                <span class="text-[var(--accent)]">●</span> 自分の気づきを登録
+            </h2>
+            <div class="space-y-4">
+                <div>
+                    <label class="text-[10px] uppercase tracking-widest text-secondary block mb-1">Category</label>
+                    <select id="new-category" class="w-full bg-neutral-900 border border-neutral-700 rounded-xl p-3 text-sm focus:outline-none focus:border-[var(--accent)]">
+                        <option value="仕事">仕事</option>
+                        <option value="人間関係">人間関係</option>
+                        <option value="成功">成功</option>
+                        <option value="健康">健康</option>
+                        <option value="資産運用">資産運用</option>
+                        <option value="nimogram">nimogram</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="text-[10px] uppercase tracking-widest text-secondary block mb-1">Content</label>
+                    <textarea id="new-content" rows="3" class="w-full bg-neutral-900 border border-neutral-700 rounded-xl p-3 text-sm focus:outline-none focus:border-[var(--accent)]" placeholder="今の気づきを入力..."></textarea>
+                </div>
+                <div>
+                    <label class="text-[10px] uppercase tracking-widest text-secondary block mb-1">Author (Optional)</label>
+                    <input id="new-author" type="text" class="w-full bg-neutral-900 border border-neutral-700 rounded-xl p-3 text-sm focus:outline-none focus:border-[var(--accent)]" placeholder="自分, 本のタイトルなど">
+                </div>
+            </div>
+            <div class="mt-8 flex gap-3">
+                <button onclick="closeModal()" class="flex-1 py-3 text-sm text-secondary font-bold">Cancel</button>
+                <button onclick="submitInsight()" id="submit-btn" class="flex-[2] py-3 bg-[var(--accent)] text-black text-sm font-bold rounded-xl shadow-lg active:scale-95 transition-transform">Save Insight</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         const CONFIG = {
             spreadsheetId: '1C_v9kxABeLRIWBu5on_mM6yaW4vl1kchsTrzTYZNTqg',
             tabName: 'シート1',
             intervalMs: 8000,
-            typingSpeed: 50 // 1文字あたりのミリ秒
+            typingSpeed: 40,
+            // ★GAS WebアプリのURLをここに貼ると書き込み可能になります
+            scriptUrl: '' 
+        };
+
+        const CAT_COLORS = {
+            'ALL': '#d4af37',
+            '仕事': '#3b82f6',
+            '人間関係': '#f43f5e',
+            '成功': '#fbbf24',
+            '健康': '#10b981',
+            '資産運用': '#8b5cf6',
+            'nimogram': '#d4af37',
+            '未分類': '#a0a0a0'
         };
 
         const ANIMATIONS = ['anim-fade', 'anim-slide', 'anim-zoom', 'anim-blur'];
@@ -139,7 +206,7 @@
                 })).filter(item => item.content.trim() !== '');
 
                 renderCategories();
-                setCategory('ALL');
+                setCategory(currentCategory);
             } catch (error) {
                 showError("接続エラー", error.message);
             }
@@ -148,11 +215,17 @@
         function renderCategories() {
             const container = document.getElementById('category-container');
             const categories = ['ALL', ...new Set(rawData.map(item => item.category))];
-            container.innerHTML = categories.map(cat => `
-                <button onclick="setCategory('${cat}')" id="cat-${cat}" class="chip whitespace-nowrap px-5 py-2 rounded-full bg-neutral-800 text-sm border border-neutral-700">
-                    ${cat}
-                </button>
-            `).join('');
+            
+            container.innerHTML = categories.map(cat => {
+                const color = CAT_COLORS[cat] || '#888';
+                return `
+                    <button onclick="setCategory('${cat}')" id="cat-${cat}" 
+                        class="chip whitespace-nowrap px-5 py-2 rounded-full text-xs" 
+                        style="--cat-color: ${color}; border-color: ${color}; color: ${color}; background: transparent;">
+                        ${cat}
+                    </button>
+                `;
+            }).join('');
         }
 
         function setCategory(category) {
@@ -192,25 +265,22 @@
             const displayArea = document.getElementById('display-area');
             const textEl = document.getElementById('quote-text');
             const authorEl = document.getElementById('quote-author');
+            const labelEl = document.getElementById('category-label');
             
-            // 1. Container Animation (Random)
             ANIMATIONS.forEach(cls => displayArea.classList.remove(cls));
             void displayArea.offsetWidth; 
             const randomAnim = ANIMATIONS[Math.floor(Math.random() * ANIMATIONS.length)];
             displayArea.classList.add(randomAnim);
 
-            // 2. Data Selection
             const randomIndex = Math.floor(Math.random() * filteredData.length);
             const item = filteredData[randomIndex];
 
-            // 3. Reset Elements
-            document.getElementById('category-label').innerText = item.category;
+            labelEl.innerText = item.category;
+            labelEl.style.color = CAT_COLORS[item.category] || 'var(--accent)';
             authorEl.style.opacity = '0';
             authorEl.innerText = item.author ? `— ${item.author}` : '';
 
-            // 4. Trigger Typing Animation
             typeWriter(item.content, textEl, () => {
-                // Fade in author after typing is done
                 authorEl.style.opacity = '0.8';
             });
 
@@ -243,6 +313,61 @@
                 bar.style.transition = `width ${CONFIG.intervalMs}ms linear`;
                 bar.style.width = '100%';
             }, 50);
+        }
+
+        // Modal Functions
+        function openModal() {
+            document.getElementById('add-modal').classList.add('active');
+            if (autoFlipTimer) clearInterval(autoFlipTimer); // 入力中はタイマー停止
+        }
+
+        function closeModal() {
+            document.getElementById('add-modal').classList.remove('active');
+            resetAutoFlip();
+        }
+
+        async function submitInsight() {
+            const cat = document.getElementById('new-category').value;
+            const content = document.getElementById('new-content').value;
+            const author = document.getElementById('new-author').value;
+            const btn = document.getElementById('submit-btn');
+
+            if (!content) return;
+
+            btn.innerText = "Saving...";
+            btn.disabled = true;
+
+            // GAS連携がない場合のフォールバック（成功メッセージだけ出す）
+            if (!CONFIG.scriptUrl) {
+                console.log("Mock save:", {cat, content, author});
+                setTimeout(() => {
+                    alert("スプレッドシートへの保存にはGoogle Apps ScriptのURL設定が必要です。");
+                    btn.innerText = "Save Insight";
+                    btn.disabled = false;
+                    closeModal();
+                }, 1000);
+                return;
+            }
+
+            try {
+                await fetch(CONFIG.scriptUrl, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ category: cat, content: content, author: author })
+                });
+                btn.innerText = "Success!";
+                setTimeout(() => {
+                    btn.innerText = "Save Insight";
+                    btn.disabled = false;
+                    closeModal();
+                    loadData(); // データを再読み込み
+                }, 1500);
+            } catch (e) {
+                alert("保存に失敗しました");
+                btn.disabled = false;
+                btn.innerText = "Save Insight";
+            }
         }
 
         function showError(title, message) {
