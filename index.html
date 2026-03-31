@@ -25,7 +25,7 @@
             padding-bottom: env(safe-area-inset-bottom);
         }
         
-        /* カテゴリーボタン（グリッド） */
+        /* カテゴリーボタン（共通） */
         .chip {
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             border-width: 1px;
@@ -33,10 +33,9 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            height: 58px; /* 文字サイズに合わせてわずかに調整 */
             text-align: center;
             line-height: 1.1;
-            padding: 6px;
+            padding: 8px;
         }
         .chip-active {
             color: #ffffff !important;
@@ -47,14 +46,18 @@
             transform: scale(0.98);
         }
         
-        /* ALL専用（エメラルドグリーン・白文字） */
+        /* ALL専用（エメラルドグリーン背景・フルワイド） */
         #cat-ALL {
             background-color: #10b981;
             border-color: #10b981;
             color: #ffffff !important;
+            grid-column: span 3; /* グリッドの上で横一杯に広げる */
+            height: 60px;
+            font-size: 16px;
+            letter-spacing: 0.2em;
         }
         #cat-ALL.chip-active {
-            box-shadow: 0 0 20px rgba(16, 185, 129, 0.5);
+            box-shadow: 0 0 25px rgba(16, 185, 129, 0.6);
             opacity: 0.9;
         }
 
@@ -129,10 +132,10 @@
         </div>
     </main>
 
-    <!-- Navigation Grid (3 Rows) -->
+    <!-- Navigation Grid (Full-width ALL + 3 Columns Grid) -->
     <footer class="px-4 pb-12 pt-6 bg-gradient-to-t from-black to-transparent">
         <div id="category-container" class="grid grid-cols-3 gap-2.5">
-            <!-- JS populated -->
+            <!-- JS populated: ALL will be first and full-width -->
         </div>
     </footer>
 
@@ -144,6 +147,7 @@
             <div class="space-y-4">
                 <select id="new-category" class="w-full bg-neutral-900 border border-neutral-800 rounded-xl p-4 text-sm font-bold text-white focus:outline-none focus:border-[var(--accent)] appearance-none">
                     <option value="NIMOGRAM">NIMOGRAM</option>
+                    <option value="FINANCE">FINANCE</option>
                     <option value="Mindset">Mindset</option>
                     <option value="Communication">Communication</option>
                     <option value="Mechanism">Mechanism</option>
@@ -170,6 +174,7 @@
 
         const CAT_SETTINGS = {
             'ALL': { color: '#10b981', alpha: 'rgba(16,185,129,0.4)' },
+            'FINANCE': { color: '#059669', alpha: 'rgba(5,150,105,0.4)' },
             'Mindset': { color: '#6366f1', alpha: 'rgba(99,102,241,0.4)' },
             'Communication': { color: '#ec4899', alpha: 'rgba(236,72,153,0.4)' },
             'Mechanism': { color: '#06b6d4', alpha: 'rgba(6,182,212,0.4)' },
@@ -217,15 +222,15 @@
 
         function renderCategories() {
             const container = document.getElementById('category-container');
-            // ニモさんの指示に基づきカテゴリーを統一
-            const defaultCats = ['ALL', 'Mindset', 'Communication', 'Mechanism', 'Strategy & Leadership', 'NIMOGRAM'];
+            const defaultCats = ['ALL', 'FINANCE', 'Mindset', 'Communication', 'Mechanism', 'Strategy & Leadership', 'NIMOGRAM'];
             
             container.innerHTML = defaultCats.map(cat => {
                 const settings = CAT_SETTINGS[cat] || CAT_SETTINGS['未分類'];
+                const isAll = cat === 'ALL';
                 return `
                     <button onclick="setCategory('${cat}')" id="cat-${cat}" 
-                        class="chip rounded-xl text-[13px] font-bold tracking-tight uppercase border border-white/10" 
-                        style="--cat-color: ${settings.color}; --cat-color-alpha: ${settings.alpha}; border-color: ${cat==='ALL'?'#10b981':settings.color+'44'}; color: ${cat==='ALL'?'#fff':settings.color};">
+                        class="chip rounded-xl text-[13px] font-bold tracking-tight uppercase border border-white/10 ${isAll ? 'mb-2' : ''}" 
+                        style="--cat-color: ${settings.color}; --cat-color-alpha: ${settings.alpha}; border-color: ${isAll ? '#10b981' : settings.color + '44'}; color: ${isAll ? '#fff' : settings.color};">
                         ${cat}
                     </button>
                 `;
