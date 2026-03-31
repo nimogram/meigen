@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Mindset Navigator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #1a1a1a;
+            --card-bg: #262626;
+            --text-primary: #e0e0e0;
+            --text-secondary: #a0a0a0;
+            --accent: #d4af37; /* Gold accent */
+        }
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            font-family: 'Inter', 'Noto Sans JP', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+            overflow-x: hidden;
+        }
+        .chip {
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .chip-active {
+            background-color: var(--accent);
+            color: #000;
+            font-weight: 600;
+        }
+        
+        /* --- Random Container Animations --- */
+        .anim-fade { animation: animFade 0.8s ease-out forwards; }
+        .anim-slide { animation: animSlide 0.8s ease-out forwards; }
+        .anim-zoom { animation: animZoom 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+        .anim-blur { animation: animBlur 1s ease-out forwards; }
+
+        @keyframes animFade { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes animSlide { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes animZoom { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+        @keyframes animBlur { from { opacity: 0; filter: blur(12px); } to { opacity: 1; filter: blur(0); } }
+
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        #progress-bar {
+            height: 2px;
+            background-color: var(--accent);
+            width: 0%;
+            transition: width 8s linear;
+        }
+        
+        /* Typing cursor style */
+        .cursor::after {
+            content: '|';
+            color: var(--accent);
+            animation: blink 0.7s infinite;
+            margin-left: 2px;
+        }
+        @keyframes blink { 50% { opacity: 0; } }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+    <!-- Auto-flip Progress Indicator -->
+    <div class="fixed top-0 left-0 w-full h-1 bg-white/5">
+        <div id="progress-bar"></div>
+    </div>
+
+    <!-- Header -->
+    <header class="p-6 pt-12 pb-4 flex justify-between items-center">
+        <h1 class="text-xs font-bold tracking-[0.2em] text-secondary uppercase opacity-60">Mindset Navigator</h1>
+        <div id="auto-indicator" class="text-[10px] text-[var(--accent)] font-bold animate-pulse">AUTO FLIP: 8s</div>
+    </header>
+
+    <!-- Category Filter -->
+    <div id="category-container" class="flex overflow-x-auto px-6 py-2 gap-2 no-scrollbar">
+        <!-- JSで生成 -->
+    </div>
+
+    <!-- Main Quote Area -->
+    <main class="flex-grow flex flex-col justify-center px-8 py-12">
+        <div id="display-area">
+            <div id="category-label" class="text-[var(--accent)] text-xs font-bold mb-4 tracking-widest uppercase">Connecting...</div>
+            <div id="quote-container">
+                <!-- ID "quote-text" will receive the typing effect -->
+                <p id="quote-text" class="text-2xl md:text-3xl font-bold leading-relaxed mb-6"></p>
+                <p id="quote-author" class="text-sm text-secondary italic opacity-0 transition-opacity duration-1000"></p>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer Controls -->
+    <footer class="p-8 pb-12 flex flex-col gap-4">
+        <button onclick="manualNext()" id="next-btn" class="w-full py-4 bg-neutral-100 text-black font-bold rounded-2xl shadow-lg active:scale-95 transition-transform flex items-center justify-center gap-2">
+            <span>Next Insight</span>
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+        </button>
+    </footer>
+
+    <script>
+        const CONFIG = {
+            spreadsheetId: '1C_v9kxABeLRIWBu5on_mM6yaW4vl1kchsTrzTYZNTqg',
+            tabName: 'シート1',
+            intervalMs: 8000,
+            typingSpeed: 50 // 1文字あたりのミリ秒
+        };
+
+        const ANIMATIONS = ['anim-fade', 'anim-slide', 'anim-zoom', 'anim-blur'];
+
+        let rawData = [];
+        let filteredData = [];
+        let currentCategory = 'ALL';
+        let autoFlipTimer = null;
+        let typingInterval = null;
+
+        async function loadData() {
+            if (!CONFIG.spreadsheetId || CONFIG.spreadsheetId.includes('YOUR_SPREADSHEET_ID')) {
+                showError("設定エラー", "IDが設定されていません。");
+                return;
+            }
+
+            const url = `https://docs.google.com/spreadsheets/d/${CONFIG.spreadsheetId}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(CONFIG.tabName)}`;
+            
+            try {
+                const response = await fetch(url, { cache: "no-store" });
+                if (!response.ok) throw new Error(`Status: ${response.status}`);
+                
+                const text = await response.text();
+                const match = text.match(/google\.visualization\.Query\.setResponse\(([\s\S]*)\);/);
+                if (!match) throw new Error('解析エラー');
+                
+                const jsonData = JSON.parse(match[1]);
+                rawData = jsonData.table.rows.map(row => ({
+                    category: (row.c && row.c[0] && row.c[0].v !== null) ? String(row.c[0].v) : '未分類',
+                    content: (row.c && row.c[1] && row.c[1].v !== null) ? String(row.c[1].v) : '',
+                    author: (row.c && row.c[2] && row.c[2].v !== null) ? String(row.c[2].v) : ''
+                })).filter(item => item.content.trim() !== '');
+
+                renderCategories();
+                setCategory('ALL');
+            } catch (error) {
+                showError("接続エラー", error.message);
+            }
+        }
+
+        function renderCategories() {
+            const container = document.getElementById('category-container');
+            const categories = ['ALL', ...new Set(rawData.map(item => item.category))];
+            container.innerHTML = categories.map(cat => `
+                <button onclick="setCategory('${cat}')" id="cat-${cat}" class="chip whitespace-nowrap px-5 py-2 rounded-full bg-neutral-800 text-sm border border-neutral-700">
+                    ${cat}
+                </button>
+            `).join('');
+        }
+
+        function setCategory(category) {
+            currentCategory = category;
+            document.querySelectorAll('.chip').forEach(btn => btn.classList.remove('chip-active'));
+            const activeBtn = document.getElementById(`cat-${category}`);
+            if (activeBtn) activeBtn.classList.add('chip-active');
+
+            filteredData = (category === 'ALL') ? rawData : rawData.filter(item => item.category === category);
+            
+            resetAutoFlip();
+            displayNext();
+        }
+
+        function typeWriter(text, element, callback) {
+            let i = 0;
+            element.innerHTML = '';
+            element.classList.add('cursor');
+            
+            if (typingInterval) clearInterval(typingInterval);
+            
+            typingInterval = setInterval(() => {
+                if (i < text.length) {
+                    element.innerHTML += text.charAt(i);
+                    i++;
+                } else {
+                    clearInterval(typingInterval);
+                    element.classList.remove('cursor');
+                    if (callback) callback();
+                }
+            }, CONFIG.typingSpeed);
+        }
+
+        function displayNext() {
+            if (filteredData.length === 0) return;
+
+            const displayArea = document.getElementById('display-area');
+            const textEl = document.getElementById('quote-text');
+            const authorEl = document.getElementById('quote-author');
+            
+            // 1. Container Animation (Random)
+            ANIMATIONS.forEach(cls => displayArea.classList.remove(cls));
+            void displayArea.offsetWidth; 
+            const randomAnim = ANIMATIONS[Math.floor(Math.random() * ANIMATIONS.length)];
+            displayArea.classList.add(randomAnim);
+
+            // 2. Data Selection
+            const randomIndex = Math.floor(Math.random() * filteredData.length);
+            const item = filteredData[randomIndex];
+
+            // 3. Reset Elements
+            document.getElementById('category-label').innerText = item.category;
+            authorEl.style.opacity = '0';
+            authorEl.innerText = item.author ? `— ${item.author}` : '';
+
+            // 4. Trigger Typing Animation
+            typeWriter(item.content, textEl, () => {
+                // Fade in author after typing is done
+                authorEl.style.opacity = '0.8';
+            });
+
+            animateProgressBar();
+        }
+
+        function manualNext() {
+            resetAutoFlip();
+            displayNext();
+        }
+
+        function resetAutoFlip() {
+            if (autoFlipTimer) clearInterval(autoFlipTimer);
+            
+            const bar = document.getElementById('progress-bar');
+            bar.style.transition = 'none';
+            bar.style.width = '0%';
+            
+            autoFlipTimer = setInterval(() => {
+                displayNext();
+            }, CONFIG.intervalMs);
+        }
+
+        function animateProgressBar() {
+            const bar = document.getElementById('progress-bar');
+            bar.style.transition = 'none';
+            bar.style.width = '0%';
+            
+            setTimeout(() => {
+                bar.style.transition = `width ${CONFIG.intervalMs}ms linear`;
+                bar.style.width = '100%';
+            }, 50);
+        }
+
+        function showError(title, message) {
+            document.getElementById('category-label').innerText = "ERROR";
+            document.getElementById('quote-text').innerHTML = `<span class="text-red-400">${title}</span><br><span class="text-sm font-normal opacity-70">${message}</span>`;
+        }
+
+        window.onload = loadData;
+    </script>
+</body>
+</html>
