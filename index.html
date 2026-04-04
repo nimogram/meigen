@@ -25,41 +25,49 @@
             padding-bottom: env(safe-area-inset-bottom);
         }
         
-        /* カテゴリーボタン（グリッド） */
+        /* プレミアム・グラデーション・チップ */
         .chip {
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            border-width: 1px;
-            background-color: rgba(255, 255, 255, 0.03);
+            transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+            border: 1px solid rgba(255, 255, 255, 0.1);
             display: flex;
             align-items: center;
             justify-content: center;
-            height: 58px;
+            height: 56px;
             text-align: center;
             line-height: 1.1;
             padding: 6px;
+            border-radius: 1rem;
+            font-size: 13px;
+            font-weight: 700;
+            background: rgba(255, 255, 255, 0.05); /* 非選択時のベース */
         }
+
+        /* アクティブ時のグラデーション適用 */
         .chip-active {
-            color: #ffffff !important;
+            background: var(--cat-grad) !important;
+            border-color: transparent !important;
+            color: var(--cat-text) !important;
+            box-shadow: 0 10px 25px -5px var(--cat-shadow);
+            transform: scale(0.96) translateY(2px);
             font-weight: 800;
-            background-color: var(--cat-color) !important;
-            border-color: var(--cat-color) !important;
-            box-shadow: 0 0 15px var(--cat-color-alpha);
-            transform: scale(0.98);
         }
         
-        /* ALL専用（黄色背景・黒文字） */
+        /* ALL専用（フラッグシップ・ゴールドグラデーション） */
         #cat-ALL {
-            background-color: #facc15; /* Tailwind yellow-400 */
-            border-color: #facc15;
-            color: #000000 !important;
             grid-column: span 3;
-            height: 60px;
-            font-size: 16px;
-            letter-spacing: 0.2em;
+            height: 64px;
+            font-size: 17px;
+            letter-spacing: 0.3em;
+            margin-bottom: 6px;
+            /* ALLは常にグラデーションを表示 */
+            background: linear-gradient(135deg, #facc15 0%, #eab308 50%, #d97706 100%);
+            color: #000;
+            border: none;
+            box-shadow: 0 4px 15px rgba(234, 179, 8, 0.3);
         }
         #cat-ALL.chip-active {
-            box-shadow: 0 0 25px rgba(250, 204, 21, 0.6);
-            opacity: 0.9;
+            box-shadow: 0 12px 30px -5px rgba(234, 179, 8, 0.6);
+            transform: scale(0.97) translateY(2px);
         }
 
         /* アニメーション演出 */
@@ -75,7 +83,7 @@
 
         #progress-bar {
             height: 2px;
-            background-color: var(--accent);
+            background: linear-gradient(90deg, #d4af37, #facc15);
             width: 0%;
             transition: width 8s linear;
         }
@@ -92,8 +100,8 @@
             display: none;
             position: fixed;
             inset: 0;
-            background: rgba(0,0,0,0.95);
-            backdrop-filter: blur(20px);
+            background: rgba(0,0,0,0.96);
+            backdrop-filter: blur(25px);
             z-index: 100;
             align-items: center;
             justify-content: center;
@@ -102,7 +110,7 @@
         .modal.active { display: flex; }
 
         .quote-text {
-            background: linear-gradient(135deg, #ffffff 0%, #a1a1aa 100%);
+            background: linear-gradient(180deg, #ffffff 0%, #a1a1aa 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
@@ -110,43 +118,43 @@
 </head>
 <body class="select-none">
 
-    <!-- Timer Indicator -->
+    <!-- Sync Timer -->
     <div class="fixed top-0 left-0 w-full h-0.5 bg-white/5 z-50">
         <div id="progress-bar"></div>
     </div>
 
-    <!-- Minimal Header -->
+    <!-- Header -->
     <header class="px-6 pt-12 pb-2 flex justify-between items-center">
         <div class="opacity-10 text-[8px] font-black tracking-[0.5em] uppercase">Private Intelligence</div>
-        <button onclick="openModal()" class="w-10 h-10 rounded-full bg-neutral-900/50 flex items-center justify-center border border-neutral-800 active:scale-90 transition-transform">
+        <button onclick="openModal()" class="w-10 h-10 rounded-2xl bg-neutral-900/50 flex items-center justify-center border border-neutral-800 active:scale-90 transition-transform">
             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="text-[var(--accent)]"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
         </button>
     </header>
 
-    <!-- Main Content Area -->
+    <!-- Display Area -->
     <main class="flex-grow flex flex-col justify-center px-10">
         <div id="display-area" class="w-full max-w-lg mx-auto">
-            <div id="quote-container" class="min-h-[200px]">
+            <div id="quote-container" class="min-h-[220px]">
                 <p id="quote-text" class="text-3xl md:text-5xl font-black leading-tight mb-8 quote-text"></p>
                 <p id="quote-author" class="text-sm text-secondary italic opacity-0 transition-opacity duration-1000"></p>
             </div>
         </div>
     </main>
 
-    <!-- Navigation Grid (3 Rows) -->
+    <!-- Navigation Grid -->
     <footer class="px-4 pb-12 pt-6 bg-gradient-to-t from-black to-transparent">
-        <div id="category-container" class="grid grid-cols-3 gap-2.5">
-            <!-- JS will populate buttons -->
+        <div id="category-container" class="grid grid-cols-3 gap-3">
+            <!-- JS populated: ALL(Full-width) + 3 Columns Grid -->
         </div>
     </footer>
 
-    <!-- Add Insight Modal -->
+    <!-- Modal -->
     <div id="add-modal" class="modal">
         <div class="bg-[#111] w-full max-w-sm p-8 rounded-[2.5rem] border border-neutral-800 shadow-2xl relative overflow-hidden">
             <div class="absolute top-0 left-0 w-full h-1 bg-[var(--accent)]"></div>
             <h2 class="text-lg font-black mb-8 text-center tracking-widest uppercase">Stock Insight</h2>
             <div class="space-y-4">
-                <select id="new-category" class="w-full bg-neutral-900 border border-neutral-800 rounded-xl p-4 text-sm font-bold text-white focus:outline-none focus:border-[var(--accent)] appearance-none">
+                <select id="new-category" class="w-full bg-neutral-900 border border-neutral-800 rounded-xl p-4 text-[13px] font-bold text-white focus:outline-none focus:border-[var(--accent)] appearance-none">
                     <option value="NIMOGRAM">NIMOGRAM</option>
                     <option value="FINANCE">FINANCE</option>
                     <option value="Mindset">Mindset</option>
@@ -154,8 +162,8 @@
                     <option value="Mechanism">Mechanism</option>
                     <option value="Strategy & Leadership">Strategy & Leadership</option>
                 </select>
-                <textarea id="new-content" rows="4" class="w-full bg-neutral-900 border border-neutral-800 rounded-xl p-4 text-sm text-white focus:outline-none focus:border-[var(--accent)]" placeholder="思考を言語化する..."></textarea>
-                <input id="new-author" type="text" class="w-full bg-neutral-900 border border-neutral-800 rounded-xl p-4 text-sm text-white focus:outline-none focus:border-[var(--accent)]" placeholder="出典（任意）"></textarea>
+                <textarea id="new-content" rows="4" class="w-full bg-neutral-900 border border-neutral-800 rounded-xl p-4 text-[13px] text-white focus:outline-none focus:border-[var(--accent)]" placeholder="思考を言語化する..."></textarea>
+                <input id="new-author" type="text" class="w-full bg-neutral-900 border border-neutral-800 rounded-xl p-4 text-[13px] text-white focus:outline-none focus:border-[var(--accent)]" placeholder="出典（任意）">
             </div>
             <div class="mt-8 flex gap-3">
                 <button onclick="closeModal()" class="flex-1 py-4 text-xs text-secondary font-bold">CLOSE</button>
@@ -173,15 +181,48 @@
             scriptUrl: 'https://script.google.com/macros/s/AKfycbw_rJsFsnhEXr8d3XxhaSIPvkq0nK6Lcn8bAmhZ5oI768wclg466kqA-PWraQ1kj_kKkA/exec' 
         };
 
+        // 洗練されたプレミアム・グラデーション設定
         const CAT_SETTINGS = {
-            'ALL': { color: '#facc15', alpha: 'rgba(250, 204, 21, 0.4)' },
-            'FINANCE': { color: '#059669', alpha: 'rgba(5, 150, 105, 0.4)' },
-            'Mindset': { color: '#6366f1', alpha: 'rgba(99, 102, 241, 0.4)' },
-            'Communication': { color: '#ec4899', alpha: 'rgba(236, 72, 153, 0.4)' },
-            'Mechanism': { color: '#06b6d4', alpha: 'rgba(6, 182, 212, 0.4)' },
-            'Strategy & Leadership': { color: '#8b5cf6', alpha: 'rgba(139, 92, 246, 0.4)' },
-            'NIMOGRAM': { color: '#d4af37', alpha: 'rgba(212, 175, 55, 0.4)' },
-            '未分類': { color: '#525252', alpha: 'rgba(82, 82, 82, 0.4)' }
+            'ALL': { 
+                grad: 'linear-gradient(135deg, #facc15 0%, #eab308 50%, #d97706 100%)', 
+                shadow: 'rgba(234, 179, 8, 0.6)',
+                text: '#000' 
+            },
+            'FINANCE': { 
+                grad: 'linear-gradient(135deg, #10b981 0%, #059669 100%)', 
+                shadow: 'rgba(16, 185, 129, 0.5)',
+                text: '#fff' 
+            },
+            'Mindset': { 
+                grad: 'linear-gradient(135deg, #6366f1 0%, #4338ca 100%)', 
+                shadow: 'rgba(99, 102, 241, 0.5)',
+                text: '#fff' 
+            },
+            'Communication': { 
+                grad: 'linear-gradient(135deg, #f43f5e 0%, #be123c 100%)', 
+                shadow: 'rgba(244, 63, 94, 0.5)',
+                text: '#fff' 
+            },
+            'Mechanism': { 
+                grad: 'linear-gradient(135deg, #06b6d4 0%, #0e7490 100%)', 
+                shadow: 'rgba(6, 182, 212, 0.5)',
+                text: '#fff' 
+            },
+            'Strategy & Leadership': { 
+                grad: 'linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%)', 
+                shadow: 'rgba(139, 92, 246, 0.5)',
+                text: '#fff' 
+            },
+            'NIMOGRAM': { 
+                grad: 'linear-gradient(135deg, #d4af37 0%, #b8860b 100%)', 
+                shadow: 'rgba(212, 175, 55, 0.5)',
+                text: '#fff' 
+            },
+            '未分類': { 
+                grad: 'linear-gradient(135deg, #52525b 0%, #27272a 100%)', 
+                shadow: 'rgba(82, 82, 91, 0.5)',
+                text: '#fff' 
+            }
         };
 
         const ANIMATIONS = ['anim-fade', 'anim-slide', 'anim-zoom', 'anim-blur'];
@@ -193,31 +234,21 @@
         let typingInterval = null;
 
         async function loadData() {
-            if (!CONFIG.spreadsheetId || CONFIG.spreadsheetId.includes('YOUR_SPREADSHEET_ID')) {
-                showError("ID REQUIRED", "スプレッドシートIDを設定してください。");
-                return;
-            }
-
             const url = `https://docs.google.com/spreadsheets/d/${CONFIG.spreadsheetId}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(CONFIG.tabName)}`;
-            
             try {
                 const response = await fetch(url, { cache: "no-store" });
-                if (!response.ok) throw new Error(`HTTP ${response.status}`);
                 const text = await response.text();
                 const match = text.match(/google\.visualization\.Query\.setResponse\(([\s\S]*)\);/);
-                if (!match) throw new Error('PARSE ERROR');
-                
                 const jsonData = JSON.parse(match[1]);
                 rawData = jsonData.table.rows.map(row => ({
                     category: (row.c && row.c[0] && row.c[0].v !== null) ? String(row.c[0].v) : '未分類',
                     content: (row.c && row.c[1] && row.c[1].v !== null) ? String(row.c[1].v) : '',
                     author: (row.c && row.c[2] && row.c[2].v !== null) ? String(row.c[2].v) : ''
                 })).filter(item => item.content.trim() !== '');
-
                 renderCategories();
                 setCategory(currentCategory);
             } catch (error) {
-                showError("CONNECT ERROR", error.message);
+                showError("CONNECT ERROR", "Check Sheet Privacy or ID.");
             }
         }
 
@@ -227,11 +258,10 @@
             
             container.innerHTML = defaultCats.map(cat => {
                 const settings = CAT_SETTINGS[cat] || CAT_SETTINGS['未分類'];
-                const isAll = cat === 'ALL';
                 return `
                     <button onclick="setCategory('${cat}')" id="cat-${cat}" 
-                        class="chip rounded-xl text-[13px] font-bold tracking-tight uppercase border border-white/10" 
-                        style="--cat-color: ${settings.color}; --cat-color-alpha: ${settings.alpha}; border-color: ${isAll ? '#facc15' : settings.color + '44'}; color: ${isAll ? '#000' : settings.color};">
+                        class="chip" 
+                        style="--cat-grad: ${settings.grad}; --cat-shadow: ${settings.shadow}; --cat-text: ${settings.text};">
                         ${cat}
                     </button>
                 `;
@@ -243,9 +273,7 @@
             document.querySelectorAll('.chip').forEach(btn => btn.classList.remove('chip-active'));
             const activeBtn = document.getElementById(`cat-${category}`);
             if (activeBtn) activeBtn.classList.add('chip-active');
-
             filteredData = (category === 'ALL') ? rawData : rawData.filter(item => item.category === category);
-            
             resetAutoFlip();
             displayNext();
         }
@@ -254,9 +282,7 @@
             let i = 0;
             element.innerHTML = '';
             element.classList.add('cursor');
-            
             if (typingInterval) clearInterval(typingInterval);
-            
             typingInterval = setInterval(() => {
                 if (i < text.length) {
                     element.innerHTML += text.charAt(i);
@@ -271,38 +297,25 @@
 
         function displayNext() {
             if (filteredData.length === 0) {
-                document.getElementById('quote-text').innerHTML = `<span class="opacity-10 text-lg font-normal tracking-normal text-white italic">Waiting for ${currentCategory}...</span>`;
+                document.getElementById('quote-text').innerHTML = `<span class="opacity-10 text-lg italic">Waiting for ${currentCategory}...</span>`;
                 document.getElementById('quote-author').innerText = "";
                 return;
             }
-
             const displayArea = document.getElementById('display-area');
             const textEl = document.getElementById('quote-text');
             const authorEl = document.getElementById('quote-author');
-            
             ANIMATIONS.forEach(cls => displayArea.classList.remove(cls));
             void displayArea.offsetWidth; 
-            const randomAnim = ANIMATIONS[Math.floor(Math.random() * ANIMATIONS.length)];
-            displayArea.classList.add(randomAnim);
-
-            const randomIndex = Math.floor(Math.random() * filteredData.length);
-            const item = filteredData[randomIndex];
-
+            displayArea.classList.add(ANIMATIONS[Math.floor(Math.random() * ANIMATIONS.length)]);
+            const item = filteredData[Math.floor(Math.random() * filteredData.length)];
             authorEl.style.opacity = '0';
             authorEl.innerText = item.author ? `— ${item.author}` : '';
-
-            typeWriter(item.content, textEl, () => {
-                authorEl.style.opacity = '0.4';
-            });
-
+            typeWriter(item.content, textEl, () => authorEl.style.opacity = '0.4');
             animateProgressBar();
         }
 
         function resetAutoFlip() {
             if (autoFlipTimer) clearInterval(autoFlipTimer);
-            const bar = document.getElementById('progress-bar');
-            bar.style.transition = 'none';
-            bar.style.width = '0%';
             autoFlipTimer = setInterval(() => displayNext(), CONFIG.intervalMs);
         }
 
@@ -332,27 +345,15 @@
             const content = document.getElementById('new-content').value;
             const author = document.getElementById('new-author').value;
             const btn = document.getElementById('submit-btn');
-
             if (!content) return;
-
             btn.innerText = "SAVING...";
             btn.disabled = true;
-
-            if (!CONFIG.scriptUrl || CONFIG.scriptUrl.includes('YOUR_GAS_WEB_APP')) {
-                alert("GAS URL missing.");
-                btn.innerText = "SAVE";
-                btn.disabled = false;
-                return;
-            }
-
             try {
                 await fetch(CONFIG.scriptUrl, {
                     method: 'POST',
                     mode: 'no-cors',
-                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ category: cat, content: content, author: author })
                 });
-
                 btn.innerText = "DONE!";
                 setTimeout(() => {
                     btn.innerText = "SAVE";
@@ -361,15 +362,14 @@
                     setTimeout(loadData, 2000);
                 }, 1500);
             } catch (e) {
-                console.error("Submit error:", e);
-                alert("送信エラー");
+                alert("Error");
                 btn.disabled = false;
                 btn.innerText = "SAVE";
             }
         }
 
         function showError(title, message) {
-            document.getElementById('quote-text').innerHTML = `<span class="text-red-500 font-black text-xl uppercase">${title}</span><br><span class="text-[8px] font-normal text-secondary opacity-30">${message}</span>`;
+            document.getElementById('quote-text').innerHTML = `<span class="text-red-500 font-black text-xl uppercase">${title}</span><br><span class="text-[8px] text-secondary opacity-30">${message}</span>`;
         }
 
         window.onload = loadData;
