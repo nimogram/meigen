@@ -25,6 +25,7 @@
             padding-bottom: env(safe-area-inset-bottom);
         }
         
+        /* カテゴリーボタン（グリッド） */
         .chip {
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             border-width: 1px;
@@ -32,7 +33,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            height: 54px;
+            height: 58px;
             text-align: center;
             line-height: 1.1;
             padding: 6px;
@@ -46,21 +47,22 @@
             transform: scale(0.98);
         }
         
-        /* ALL専用（横一面・エメラルドグリーン） */
+        /* ALL専用（黄色背景・黒文字） */
         #cat-ALL {
-            background-color: #10b981;
-            border-color: #10b981;
-            color: #ffffff !important;
+            background-color: #facc15; /* Tailwind yellow-400 */
+            border-color: #facc15;
+            color: #000000 !important;
             grid-column: span 3;
             height: 60px;
             font-size: 16px;
             letter-spacing: 0.2em;
         }
         #cat-ALL.chip-active {
-            box-shadow: 0 0 25px rgba(16, 185, 129, 0.6);
+            box-shadow: 0 0 25px rgba(250, 204, 21, 0.6);
             opacity: 0.9;
         }
 
+        /* アニメーション演出 */
         .anim-fade { animation: animFade 0.8s ease-out forwards; }
         .anim-slide { animation: animSlide 0.8s ease-out forwards; }
         .anim-zoom { animation: animZoom 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
@@ -108,10 +110,12 @@
 </head>
 <body class="select-none">
 
+    <!-- Timer Indicator -->
     <div class="fixed top-0 left-0 w-full h-0.5 bg-white/5 z-50">
         <div id="progress-bar"></div>
     </div>
 
+    <!-- Minimal Header -->
     <header class="px-6 pt-12 pb-2 flex justify-between items-center">
         <div class="opacity-10 text-[8px] font-black tracking-[0.5em] uppercase">Private Intelligence</div>
         <button onclick="openModal()" class="w-10 h-10 rounded-full bg-neutral-900/50 flex items-center justify-center border border-neutral-800 active:scale-90 transition-transform">
@@ -119,6 +123,7 @@
         </button>
     </header>
 
+    <!-- Main Content Area -->
     <main class="flex-grow flex flex-col justify-center px-10">
         <div id="display-area" class="w-full max-w-lg mx-auto">
             <div id="quote-container" class="min-h-[200px]">
@@ -128,18 +133,20 @@
         </div>
     </main>
 
+    <!-- Navigation Grid (3 Rows) -->
     <footer class="px-4 pb-12 pt-6 bg-gradient-to-t from-black to-transparent">
         <div id="category-container" class="grid grid-cols-3 gap-2.5">
-            <!-- JS populated -->
+            <!-- JS will populate buttons -->
         </div>
     </footer>
 
+    <!-- Add Insight Modal -->
     <div id="add-modal" class="modal">
         <div class="bg-[#111] w-full max-w-sm p-8 rounded-[2.5rem] border border-neutral-800 shadow-2xl relative overflow-hidden">
             <div class="absolute top-0 left-0 w-full h-1 bg-[var(--accent)]"></div>
             <h2 class="text-lg font-black mb-8 text-center tracking-widest uppercase">Stock Insight</h2>
             <div class="space-y-4">
-                <select id="new-category" class="w-full bg-neutral-900 border border-neutral-800 rounded-xl p-4 text-[13px] font-bold text-white focus:outline-none focus:border-[var(--accent)] appearance-none">
+                <select id="new-category" class="w-full bg-neutral-900 border border-neutral-800 rounded-xl p-4 text-sm font-bold text-white focus:outline-none focus:border-[var(--accent)] appearance-none">
                     <option value="NIMOGRAM">NIMOGRAM</option>
                     <option value="FINANCE">FINANCE</option>
                     <option value="Mindset">Mindset</option>
@@ -147,8 +154,8 @@
                     <option value="Mechanism">Mechanism</option>
                     <option value="Strategy & Leadership">Strategy & Leadership</option>
                 </select>
-                <textarea id="new-content" rows="4" class="w-full bg-neutral-900 border border-neutral-800 rounded-xl p-4 text-[13px] text-white focus:outline-none focus:border-[var(--accent)]" placeholder="思考を言語化する..."></textarea>
-                <input id="new-author" type="text" class="w-full bg-neutral-900 border border-neutral-800 rounded-xl p-4 text-[13px] text-white focus:outline-none focus:border-[var(--accent)]" placeholder="出典（任意）">
+                <textarea id="new-content" rows="4" class="w-full bg-neutral-900 border border-neutral-800 rounded-xl p-4 text-sm text-white focus:outline-none focus:border-[var(--accent)]" placeholder="思考を言語化する..."></textarea>
+                <input id="new-author" type="text" class="w-full bg-neutral-900 border border-neutral-800 rounded-xl p-4 text-sm text-white focus:outline-none focus:border-[var(--accent)]" placeholder="出典（任意）"></textarea>
             </div>
             <div class="mt-8 flex gap-3">
                 <button onclick="closeModal()" class="flex-1 py-4 text-xs text-secondary font-bold">CLOSE</button>
@@ -159,8 +166,7 @@
 
     <script>
         const CONFIG = {
-            // これまでの履歴に基づき、ニモさんのスプレッドシートIDを復旧しました
-            spreadsheetId: '1C_v9kxABeLRIWBu5on_mM6yaW4vl1kchsTrzTYZNTqg', 
+            spreadsheetId: '1C_v9kxABeLRIWBu5on_mM6yaW4vl1kchsTrzTYZNTqg',
             tabName: 'シート1',
             intervalMs: 8000,
             typingSpeed: 120, 
@@ -168,14 +174,14 @@
         };
 
         const CAT_SETTINGS = {
-            'ALL': { color: '#10b981', alpha: 'rgba(16,185,129,0.4)' },
-            'FINANCE': { color: '#059669', alpha: 'rgba(5,150,105,0.4)' },
-            'Mindset': { color: '#6366f1', alpha: 'rgba(99,102,241,0.4)' },
-            'Communication': { color: '#ec4899', alpha: 'rgba(236,72,153,0.4)' },
-            'Mechanism': { color: '#06b6d4', alpha: 'rgba(6,182,212,0.4)' },
-            'Strategy & Leadership': { color: '#8b5cf6', alpha: 'rgba(139,92,246,0.4)' },
-            'NIMOGRAM': { color: '#d4af37', alpha: 'rgba(212,175,55,0.4)' },
-            '未分類': { color: '#525252', alpha: 'rgba(82,82,82,0.4)' }
+            'ALL': { color: '#facc15', alpha: 'rgba(250, 204, 21, 0.4)' },
+            'FINANCE': { color: '#059669', alpha: 'rgba(5, 150, 105, 0.4)' },
+            'Mindset': { color: '#6366f1', alpha: 'rgba(99, 102, 241, 0.4)' },
+            'Communication': { color: '#ec4899', alpha: 'rgba(236, 72, 153, 0.4)' },
+            'Mechanism': { color: '#06b6d4', alpha: 'rgba(6, 182, 212, 0.4)' },
+            'Strategy & Leadership': { color: '#8b5cf6', alpha: 'rgba(139, 92, 246, 0.4)' },
+            'NIMOGRAM': { color: '#d4af37', alpha: 'rgba(212, 175, 55, 0.4)' },
+            '未分類': { color: '#525252', alpha: 'rgba(82, 82, 82, 0.4)' }
         };
 
         const ANIMATIONS = ['anim-fade', 'anim-slide', 'anim-zoom', 'anim-blur'];
@@ -217,7 +223,6 @@
 
         function renderCategories() {
             const container = document.getElementById('category-container');
-            // ALLを横一面に配置
             const defaultCats = ['ALL', 'FINANCE', 'Mindset', 'Communication', 'Mechanism', 'Strategy & Leadership', 'NIMOGRAM'];
             
             container.innerHTML = defaultCats.map(cat => {
@@ -226,7 +231,7 @@
                 return `
                     <button onclick="setCategory('${cat}')" id="cat-${cat}" 
                         class="chip rounded-xl text-[13px] font-bold tracking-tight uppercase border border-white/10" 
-                        style="--cat-color: ${settings.color}; --cat-color-alpha: ${settings.alpha}; border-color: ${isAll ? '#10b981' : settings.color + '44'}; color: ${isAll ? '#fff' : settings.color};">
+                        style="--cat-color: ${settings.color}; --cat-color-alpha: ${settings.alpha}; border-color: ${isAll ? '#facc15' : settings.color + '44'}; color: ${isAll ? '#000' : settings.color};">
                         ${cat}
                     </button>
                 `;
@@ -334,7 +339,7 @@
             btn.disabled = true;
 
             if (!CONFIG.scriptUrl || CONFIG.scriptUrl.includes('YOUR_GAS_WEB_APP')) {
-                alert("GASのデプロイURLが設定されていません。");
+                alert("GAS URL missing.");
                 btn.innerText = "SAVE";
                 btn.disabled = false;
                 return;
@@ -357,7 +362,7 @@
                 }, 1500);
             } catch (e) {
                 console.error("Submit error:", e);
-                alert("送信エラー。設定を確認してください。");
+                alert("送信エラー");
                 btn.disabled = false;
                 btn.innerText = "SAVE";
             }
